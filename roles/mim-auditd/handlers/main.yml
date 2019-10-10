@@ -1,0 +1,11 @@
+---
+
+- name: "Reload auditd"
+  service: 
+    name: auditd
+    state: restarted
+  listen: "reload_auditd"
+
+- name: "Update grub"
+  command: "update-grub"
+  listen: "update_grub"

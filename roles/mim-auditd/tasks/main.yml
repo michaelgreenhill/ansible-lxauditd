@@ -1,0 +1,80 @@
+---
+
+- name: 4.1 | Configure System Accounting (auditd)
+  apt:
+    name: auditd
+    state: present
+
+- name: 4.1.2 | Ensure auditd service is enabled
+  service:
+    name: auditd
+    state: started
+    enabled: yes
+
+- name: 4.1.3 | Ensure auditing for processes that start prior to auditd is enabled
+  lineinfile:
+    state: present
+    dest: /etc/default/grub
+    backrefs: true
+    backup: true
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.*audit)\"[^\"]+)(\".*)'
+    line: '\1 audit=1\2'
+  notify: 
+    - "update_grub"
+    - "reload_auditd"
+  tags: 
+    - grub
+  
+- name: section_04_level1 | Drop the auditd config 
+  copy:
+    src: files/audit.rules.mim
+    dest: /etc/audit/rules.d/audit.mim.rules
+    mode: 0640
+    owner: root
+    group: root
+  notify: "reload_auditd"
+
+- name: "NOTSCORED | 4.1.1.1 | PATCH | Ensure audit log storage size is configured"
+  lineinfile:
+    dest: /etc/audit/auditd.conf
+    regexp: "^max_log_file( |=)"
+    line: "max_log_file = 10"
+    state: present
+  when:
+    - deb9cis_rule_4_1_1_1
+  notify: reload_auditd
+  tags:
+    - level2
+    - auditd
+    - patch
+    - rule_4.1.1.1
+
+- name: "SCORED | 4.1.1.2 | PATCH | Ensure system is disabled when audit logs are full"
+  lineinfile:
+    dest: /etc/audit/auditd.conf
+    regexp: "^admin_space_left_action"
+    line: "admin_space_left_action = {{ deb9cis_auditd['admin_space_left_action'] }}"
+    state: present
+  when:
+    - deb9cis_rule_4_1_1_2
+  notify: reload_auditd
+  tags:
+    - level2
+    - auditd
+    - patch
+    - rule_4.1.1.2
+
+- name: "SCORED | 4.1.1.2 | PATCH | Ensure email on non-admin audit space alert"
+  lineinfile:
+    dest: /etc/audit/auditd.conf
+    regexp: "^space_left_action"
+    line: "space_left_action = email"
+    state: present
+  when:
+    - deb9cis_rule_4_1_1_2
+  notify: reload_auditd
+  tags:
+    - level2
+    - auditd
+    - patch
+    - rule_4.1.1.2

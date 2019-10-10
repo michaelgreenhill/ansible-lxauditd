@@ -1,0 +1,11 @@
+---
+
+deb9cis_syslog: "rsyslog"
+deb9cis_logrotate: "daily"
+deb9cis_auditd:
+  admin_space_left_action: halt
+  max_log_file_action: keep_logs
+  
+deb9cis_rule_4_1_1_1: true
+deb9cis_rule_4_1_1_2: false # breaks things at present
+deb9cis_rule_4_1_1_3: true

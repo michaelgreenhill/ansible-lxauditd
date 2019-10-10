@@ -1,0 +1,30 @@
+---
+
+# Deploy Auditd and logrotate
+- name: Deploy Auditd and logrotate
+  hosts: all
+  become: yes
+  become_method: sudo
+  roles:
+  - mim-auditd
+
+# Logrotate
+- name: Logrotate
+  hosts: all
+  become: yes
+  become_method: sudo
+  roles: 
+  - anisble-logrotate
+  vars:
+    logrotate_scripts:
+      - name: auditd
+        path: /var/log/audit/audit.log
+        options: 
+          - weekly
+          - size 25M
+          - missingok
+          - compress
+          - delaycompress
+          - copytruncate
+          - rotate 14
+  tags: logrotate

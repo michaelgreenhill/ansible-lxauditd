@@ -1,0 +1,4 @@
+*.retry
+test.yml
+group_vars/*
+host_vars/*
